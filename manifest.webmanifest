@@ -1,0 +1,17 @@
+{
+  "name": "Password Generator Pro",
+  "short_name": "Password Pro",
+  "description": "Generatore di password crittografico locale.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#090d16",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
