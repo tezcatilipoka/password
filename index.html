@@ -26,8 +26,8 @@
     .toggles{display:grid;gap:10px;margin-top:12px}.toggle{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.055);color:#dce3ef;font-size:14px;line-height:1.35;font-weight:700}
     .switch{position:relative;width:52px;height:31px;flex:0 0 auto}.switch input{opacity:0;width:0;height:0}.slider{position:absolute;inset:0;background:rgba(255,255,255,.17);border:1px solid var(--line);border-radius:999px;transition:.2s}
     .slider:before{content:"";position:absolute;height:25px;width:25px;left:2px;top:2px;border-radius:50%;background:white;transition:.2s;box-shadow:0 2px 10px rgba(0,0,0,.35)}.switch input:checked+.slider{background:rgba(10,132,255,.95)}.switch input:checked+.slider:before{transform:translateX(21px)}
-    .passwordBox{margin-top:14px;background:rgba(0,0,0,.34);border:1px solid var(--line);border-radius:22px;padding:16px;min-height:150px;overflow:visible}.passwordHeader{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
-    .passwordScroll{width:100%;max-width:100%;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;padding-bottom:8px} #password{display:inline-block;font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:clamp(16px,4.2vw,22px);line-height:1.45;white-space:nowrap;word-break:normal;overflow-wrap:normal;user-select:text}
+    .passwordBox{margin-top:14px;background:rgba(0,0,0,.34);border:1px solid var(--line);border-radius:22px;padding:16px;min-height:150px;overflow:hidden}.passwordHeader{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
+.passwordField{width:100%;display:block;border:0;background:transparent;color:var(--text);font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:clamp(16px,4.2vw,22px);line-height:1.45;white-space:nowrap;overflow-x:auto;outline:none;padding:0}
     .stats{display:grid;grid-template-columns:1fr;gap:10px;margin-top:14px}.stat{display:flex;justify-content:space-between;gap:14px;padding:12px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.055);font-size:14px}.stat span:first-child{color:var(--muted);font-weight:750}.stat span:last-child{text-align:right;font-weight:900;overflow-wrap:anywhere}
     .quality{display:grid;gap:9px;margin-top:14px}.check{display:flex;gap:10px;align-items:flex-start;color:#d8deea;background:rgba(255,255,255,.052);border:1px solid var(--line);border-radius:15px;padding:11px 12px;font-size:14px;line-height:1.35}.check b{color:var(--green)}
     .small{color:var(--muted);font-size:13px;line-height:1.45;margin:12px 0 0}.footer{color:#7d8795;text-align:center;font-size:12px;line-height:1.45;margin:18px 4px 4px}
@@ -57,7 +57,7 @@
         <div class="check"><b>✓</b><span>Supporto offline dopo il primo caricamento, se il service worker è attivo.</span></div>
       </div></div>
       <div class="card mainCard">
-        <div class="passwordBox"><div class="passwordHeader"><span>Password</span><span id="strengthLabel">-</span></div><div class="passwordScroll"><div id="password"></div></div></div>
+        <div class="passwordBox"><div class="passwordHeader"><span>Password</span><span id="strengthLabel">-</span></div><input id="password" class="passwordField" type="text" readonly></div>
         <div class="stats">
           <div class="stat"><span>Lunghezza</span><span id="statLength">-</span></div><div class="stat"><span>Alfabeto</span><span id="statAlphabet">-</span></div>
           <div class="stat"><span>Entropia teorica</span><span id="statEntropy">-</span></div><div class="stat"><span>Spazio possibile</span><span id="statSpace">-</span></div>
@@ -87,8 +87,8 @@
     function strengthText(bits){if(bits>=256)return"Estrema";if(bits>=128)return"Molto alta";if(bits>=80)return"Alta";if(bits>=60)return"Media";return"Bassa"}
     async function copyPassword(){if(!currentPassword){toast("Prima genera una password.");return false}try{await navigator.clipboard.writeText(currentPassword);toast("Password copiata negli appunti.");return true}catch(_){toast("Copia non riuscita. Seleziona la password manualmente.");return false}}
     async function generatePassword(){const length=Number(el.length.value.trim());if(!Number.isSafeInteger(length)||length<4){toast("Inserisci un numero intero da almeno 4 caratteri.");return}if(!window.crypto||!crypto.getRandomValues){toast("crypto.getRandomValues() non disponibile.");return}const sets=getSets();const chars=[pick(sets.lower),pick(sets.upper),pick(sets.digits),pick(sets.symbols)];while(chars.length<length)chars.push(pick(sets.alphabet));shuffleCrypto(chars);currentPassword=chars.join("");const entropy=length*Math.log2(sets.alphabet.length);
-      el.password.textContent=currentPassword;
-      el.password.parentElement.scrollLeft=0;
+      el.password.value=currentPassword;
+      el.password.scrollLeft=0;
       el.statLength.textContent=length.toLocaleString("it-IT")+" caratteri";el.statAlphabet.textContent=sets.alphabet.length+" caratteri ASCII";el.statEntropy.textContent=entropy.toLocaleString("it-IT",{minimumFractionDigits:2,maximumFractionDigits:2})+" bit";el.statSpace.textContent="≈ "+formatLargePower(sets.alphabet.length,length);el.strengthLabel.textContent=strengthText(entropy);saveSettings();if(el.autoCopy.checked)await copyPassword();else toast("Password generata.")}
     el.generate.addEventListener("click",generatePassword);el.copy.addEventListener("click",copyPassword);el.length.addEventListener("keydown",event=>{if(event.key==="Enter"){generatePassword();el.length.blur()}});el.length.addEventListener("change",saveSettings);el.autoCopy.addEventListener("change",saveSettings);el.noAmbiguous.addEventListener("change",()=>{saveSettings();generatePassword()});
     if("serviceWorker"in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("./sw.js").catch(()=>{})})}
